@@ -56,11 +56,16 @@ def membership(x, a, b, c, d):
 
     Returns a degree between 0 and 1.
     """
-    # TODO: handle x <= a or x >= d -> 0
-    # TODO: handle the flat top, b <= x <= c -> 1
-    # TODO: handle the rising edge a < x < b -> (x-a)/(b-a)
-    # TODO: handle the falling edge c < x < d -> (d-x)/(d-c)
-    # TODO: watch for division by zero when a==b (shoulder) or c==d (shoulder)
+
+    if b <= x <= c: return 1
+    elif x <= a or x >= d: return 0
+    elif a < x and x < b:
+        if a == b: return 1
+        else: return (x-a)/(b-a)
+    elif c < x and x < d:
+        if c == d: return 1
+        else: return (d-x)/(d-c)
+
     pass
 
 
@@ -72,8 +77,8 @@ def fuzzify(value, sets):
     Returns {set_name: degree} for every set in `sets`,
     e.g. {"low": 0.3, "medium": 0.7, "high": 0.0}
     """
-    # TODO: call membership() once per set, collect into a dict
-    pass
+    # call membership() once per set, collect into a dict
+    return {set_name: membership(value, *bounds) for set_name, bounds in sets.items()}
 
 
 # Rule base: (congestion_set, wait_set) -> output priority level.
@@ -101,10 +106,14 @@ def evaluate_rules(congestion_degrees, wait_degrees, rules=RULES):
     Returns {output_set_name: strength} -- the firing strength for each of the 5 priority levels,
     after folding together every rule that points at the same output level (via max).
     """
-    # TODO: for each (c_set, w_set, out_set) in rules:
+    # for each (c_set, w_set, out_set) in rules:
     #   strength = min(congestion_degrees[c_set], wait_degrees[w_set])
     #   keep the max strength seen so far for out_set
-    pass
+    rule_strengths = {}
+    for c_set, w_set, out_set in rules:
+        strength = min(congestion_degrees[c_set], wait_degrees[w_set])
+        rule_strengths[out_set] = max(rule_strengths.get(out_set, 0), strength)
+    return rule_strengths
 
 
 def aggregate(rule_strengths, output_sets):
@@ -118,8 +127,18 @@ def aggregate(rule_strengths, output_sets):
     Returns something defuzzify() can sample -- e.g. a function of x, or a list of
     (x, degree) samples. Pick whichever representation makes defuzzify() cleanest.
     """
-    # TODO
-    pass
+    # for each output set, clip its trapezoid shape at that rule's strength (via min),
+    # then combine all 5 clipped shapes at every x via max -- return a function of x
+    # so defuzzify() can just sample it directly
+    def aggregated(x):
+        degree = 0
+        for set_name, strength in rule_strengths.items():
+            a, b, c, d = output_sets[set_name]
+            clipped = min(membership(x, a, b, c, d), strength)
+            degree = max(degree, clipped)
+        return degree
+
+    return aggregated
 
 
 def defuzzify(aggregated, universe_range=(0, 1), steps=1000):
@@ -127,9 +146,23 @@ def defuzzify(aggregated, universe_range=(0, 1), steps=1000):
     Centroid method: sample the aggregated curve across universe_range,
     return the weighted-average x -- the crisp priority value.
     """
-    # TODO: sample x from universe_range[0] to universe_range[1] in `steps` increments
-    # TODO: centroid = sum(x * degree) / sum(degree) across all samples
-    pass
+    # sample x from universe_range[0] to universe_range[1] in `steps` increments
+    # centroid = sum(x * degree) / sum(degree) across all samples
+    lo, hi = universe_range
+    step_size = (hi - lo) / steps
+
+    numerator = 0
+    denominator = 0
+    for i in range(steps + 1):
+        x = lo + i * step_size
+        degree = aggregated(x)
+        numerator += x * degree
+        denominator += degree
+
+    if denominator == 0:
+        return 0  # nothing fired at all -- no meaningful priority, default to 0
+
+    return numerator / denominator
 
 
 def get_priority(congestion_score, wait_time, fuzzy_sets):
@@ -142,10 +175,16 @@ def get_priority(congestion_score, wait_time, fuzzy_sets):
 
     Returns a single float priority value.
     """
-    # TODO: fuzzify(congestion_score, fuzzy_sets["congestion"])
-    # TODO: fuzzify(wait_time, fuzzy_sets["wait_time"])
-    # TODO: evaluate_rules(...) -> aggregate(...) -> defuzzify(...)
-    pass
+    # fuzzify(congestion_score, fuzzy_sets["congestion"])
+    # fuzzify(wait_time, fuzzy_sets["wait_time"])
+    # evaluate_rules(...) -> aggregate(...) -> defuzzify(...)
+    congestion_degrees = fuzzify(congestion_score, fuzzy_sets["congestion"])
+    wait_degrees = fuzzify(wait_time, fuzzy_sets["wait_time"])
+
+    rule_strengths = evaluate_rules(congestion_degrees, wait_degrees)
+    aggregated = aggregate(rule_strengths, fuzzy_sets["priority"])
+
+    return defuzzify(aggregated)
 
 
 def get_all_priorities(congestion_scores, wait_times, fuzzy_sets):
@@ -156,13 +195,17 @@ def get_all_priorities(congestion_scores, wait_times, fuzzy_sets):
 
     Returns {"north": 0.71, ...} -- ready to feed phase aggregation.
     """
-    # TODO: call get_priority() once per approach, collect into a dict
-    pass
+    # call get_priority() once per approach, collect into a dict
+    priorities = {}
+    for approach, congestion_score in congestion_scores.items():
+        wait_time = wait_times.get(approach, 0)
+        priorities[approach] = round(get_priority(congestion_score, wait_time, fuzzy_sets), 4)
+    return priorities
 
 
 if __name__ == "__main__":
     # Quick manual sanity check -- replace with real congestion_scores/wait_times when ready
     fuzzy_sets = load_fuzzy_sets()
-    fake_congestion = {"lane_a": 0.42}
-    fake_wait_times = {"lane_a": 35}
+    fake_congestion = {"lane_a": 0.0}
+    fake_wait_times = {"lane_a": 0}
     print(get_all_priorities(fake_congestion, fake_wait_times, fuzzy_sets))
