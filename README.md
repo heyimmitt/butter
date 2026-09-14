@@ -42,10 +42,10 @@ Evaluator (logs wait time / throughput)
 
 🚧 In progress. Currently working through:
 - [x] Baseline YOLO detection sanity check (stock COCO weights)
-- [ ] Fine-tuning YOLOv8 on BMD-45 for Indian vehicle classes
-- [ ] Lane ROI assignment
+- [x] Lane ROI assignment
 - [ ] Fuzzy inference engine
 - [ ] Weighted priority scheduler
 - [ ] SUMO/TraCI integration
 - [ ] Evaluation against fixed-time baseline
+- [ ] Fine-tuning YOLOv8 on BMD-45 for Indian vehicle classes
 - [ ] Multi-intersection coordination *(planned, later phase)*
