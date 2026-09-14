@@ -43,7 +43,7 @@ Evaluator (logs wait time / throughput)
 🚧 In progress. Currently working through:
 - [x] Baseline YOLO detection sanity check (stock COCO weights)
 - [x] Lane ROI assignment
-- [ ] Fuzzy inference engine
+- [x] Fuzzy inference engine
 - [ ] Weighted priority scheduler
 - [ ] SUMO/TraCI integration
 - [ ] Evaluation against fixed-time baseline

@@ -1,0 +1,4 @@
+{
+    "NS": ["north", "south"],
+    "EW": ["east", "west"]
+}
