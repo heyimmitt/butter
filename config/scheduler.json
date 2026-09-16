@@ -1,0 +1,5 @@
+{
+    "min_green": 10,
+    "max_green": 60,
+    "yellow_time": 3
+}

@@ -1,0 +1,15 @@
+<routes>
+    <vType id="car" accel="2.6" decel="4.5" sigma="0.5" length="5" maxSpeed="13.9"/>
+
+    <route id="N_S" edges="N_in S_out"/>
+    <route id="S_N" edges="S_in N_out"/>
+    <route id="E_W" edges="E_in W_out"/>
+    <route id="W_E" edges="W_in E_out"/>
+
+    <!-- deliberately asymmetric demand: north is much heavier than the other three,
+         so there's something for adaptive control to actually improve on vs fixed-time -->
+    <flow id="flow_N" type="car" route="N_S" begin="0" end="1800" vehsPerHour="600" departSpeed="max"/>
+    <flow id="flow_S" type="car" route="S_N" begin="0" end="1800" vehsPerHour="200" departSpeed="max"/>
+    <flow id="flow_E" type="car" route="E_W" begin="0" end="1800" vehsPerHour="150" departSpeed="max"/>
+    <flow id="flow_W" type="car" route="W_E" begin="0" end="1800" vehsPerHour="150" departSpeed="max"/>
+</routes>
