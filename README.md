@@ -44,8 +44,8 @@ Evaluator (logs wait time / throughput)
 - [x] Baseline YOLO detection sanity check (stock COCO weights)
 - [x] Lane ROI assignment
 - [x] Fuzzy inference engine
-- [ ] Weighted priority scheduler
-- [ ] SUMO/TraCI integration
-- [ ] Evaluation against fixed-time baseline
+- [x] Weighted priority scheduler
+- [x] SUMO/TraCI integration
+- [x] Evaluation against fixed-time baseline
 - [ ] Fine-tuning YOLOv8 on BMD-45 for Indian vehicle classes
 - [ ] Multi-intersection coordination *(planned, later phase)*
