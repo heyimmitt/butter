@@ -23,3 +23,9 @@ data/
 Thumbs.db
 
 docs/
+
+# sumo run outputs -- regenerated every run
+tripinfo_*.xml
+
+# test.py output
+detection_check.jpg
