@@ -65,7 +65,7 @@ def get_congestion_scores():
 
 def run_fixed(tripinfo_path):
     """Baseline: don't touch the traffic light at all, let the default program run."""
-    traci.start(["sumo-gui", "-c", CONFIG_FILE, "--tripinfo-output", tripinfo_path,
+    traci.start(["sumo", "-c", CONFIG_FILE, "--tripinfo-output", tripinfo_path,
                  "--no-step-log", "true", "--duration-log.disable", "true"])
 
     for _ in range(SIM_DURATION):
@@ -74,9 +74,19 @@ def run_fixed(tripinfo_path):
     traci.close()
 
 
+def set_phase(phase_index):
+    """
+    setPhase alone keeps the default program's duration for that phase (42s green),
+    so SUMO would advance on its own mid-green whenever we ask for longer than that.
+    Pinning the duration to the whole sim length means only our loop ever switches phases.
+    """
+    traci.trafficlight.setPhase(TLS_ID, phase_index)
+    traci.trafficlight.setPhaseDuration(TLS_ID, SIM_DURATION)
+
+
 def run_adaptive(tripinfo_path):
     """Our system: recompute priorities every cycle and drive the light ourselves."""
-    traci.start(["sumo-gui", "-c", CONFIG_FILE, "--tripinfo-output", tripinfo_path,
+    traci.start(["sumo", "-c", CONFIG_FILE, "--tripinfo-output", tripinfo_path,
                  "--no-step-log", "true", "--duration-log.disable", "true"])
 
     fuzzy_sets = load_fuzzy_sets()
@@ -98,7 +108,7 @@ def run_adaptive(tripinfo_path):
         green_times = compute_green_times(phase_priorities, scheduler_config)
 
         for phase in ("NS", "EW"):
-            traci.trafficlight.setPhase(TLS_ID, GREEN_PHASE[phase])
+            set_phase(GREEN_PHASE[phase])
             for approach in phase_pairs[phase]:
                 last_green_time[approach] = sim_time
 
@@ -108,7 +118,7 @@ def run_adaptive(tripinfo_path):
                 traci.simulationStep()
                 sim_time += 1
 
-            traci.trafficlight.setPhase(TLS_ID, YELLOW_PHASE[phase])
+            set_phase(YELLOW_PHASE[phase])
             for _ in range(yellow_time):
                 if sim_time >= SIM_DURATION:
                     break
