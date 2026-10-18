@@ -13,7 +13,12 @@ RUN pip install --no-cache-dir --default-timeout=120 --retries 5 -r requirements
     pip uninstall -y opencv-python opencv-python-headless && \
     pip install --no-cache-dir opencv-python-headless==5.0.0.93
 
-# eclipse-sumo ships the sumo binaries inside the python package
+# eclipse-sumo ships the sumo binaries inside the python package, but they still link
+# against these system libs (even the non-gui `sumo`), which slim doesn't have
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends libx11-6 libxext6 libxrender1 libgl1 libatomic1 libexpat1 && \
+    rm -rf /var/lib/apt/lists/*
+
 ENV SUMO_HOME=/usr/local/lib/python3.12/site-packages/sumo
 
 COPY . .
