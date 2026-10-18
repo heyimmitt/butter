@@ -57,16 +57,16 @@ def membership(x, a, b, c, d):
     Returns a degree between 0 and 1.
     """
 
+    # shoulders stay at 1 past the edge of the universe -- otherwise e.g. a wait time
+    # of 95s against "long" = [60,90,90,90] falls into the x >= d case and gets 0,
+    # no rule fires, and the most-starved approach ends up with priority 0
+    if a == b and x <= b: return 1
+    if c == d and x >= c: return 1
+
     if b <= x <= c: return 1
     elif x <= a or x >= d: return 0
-    elif a < x and x < b:
-        if a == b: return 1
-        else: return (x-a)/(b-a)
-    elif c < x and x < d:
-        if c == d: return 1
-        else: return (d-x)/(d-c)
-
-    pass
+    elif a < x < b: return (x-a)/(b-a)
+    else: return (d-x)/(d-c)
 
 
 def fuzzify(value, sets):
@@ -109,10 +109,13 @@ def evaluate_rules(congestion_degrees, wait_degrees, rules=RULES):
     # for each (c_set, w_set, out_set) in rules:
     #   strength = min(congestion_degrees[c_set], wait_degrees[w_set])
     #   keep the max strength seen so far for out_set
+
     rule_strengths = {}
+
     for c_set, w_set, out_set in rules:
-        strength = min(congestion_degrees[c_set], wait_degrees[w_set])
+        strength = min(congestion_degrees[c_set], wait_degrees[w_set]) # not taking avg 
         rule_strengths[out_set] = max(rule_strengths.get(out_set, 0), strength)
+
     return rule_strengths
 
 
