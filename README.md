@@ -47,6 +47,7 @@ In simulation, the first two steps are replaced by SUMO's ground-truth per-edge 
 
 ```
 src/
+  controller.py       control loop: congestion source → fuzzy → phases → green times → actuator
   detection.py        YOLO → density → fuzzy → phase priorities, on a video clip
   density_scorer.py   lane ROI assignment + congestion score
   fuzzy_scorer.py     fuzzy inference engine
