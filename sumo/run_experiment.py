@@ -84,7 +84,7 @@ class TraciActuator:
 
 def run_fixed(tripinfo_path):
     """Baseline: don't touch the traffic light at all, let the default program run."""
-    traci.start(["sumo-gui", "-c", CONFIG_FILE, "--tripinfo-output", tripinfo_path,
+    traci.start(["sumo", "-c", CONFIG_FILE, "--tripinfo-output", tripinfo_path,
                  "--no-step-log", "true", "--duration-log.disable", "true"])
 
     for _ in range(SIM_DURATION):
@@ -95,7 +95,7 @@ def run_fixed(tripinfo_path):
 
 def run_adaptive(tripinfo_path):
     """Our system: recompute priorities every cycle and drive the light ourselves."""
-    traci.start(["sumo-gui", "-c", CONFIG_FILE, "--tripinfo-output", tripinfo_path,
+    traci.start(["sumo", "-c", CONFIG_FILE, "--tripinfo-output", tripinfo_path,
                  "--no-step-log", "true", "--duration-log.disable", "true"])
 
     decisions = run_controller(TraciSource(), TraciActuator(), SIM_DURATION)
