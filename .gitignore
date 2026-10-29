@@ -22,7 +22,7 @@ data/
 .DS_Store
 Thumbs.db
 
-docs/
+
 
 # sumo run outputs -- regenerated every run
 tripinfo_*.xml
